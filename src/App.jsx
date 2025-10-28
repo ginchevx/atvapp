@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Plus, Star, TrendingUp, Film, Tv, Newspaper, Settings, Edit, Trash2, X, Upload, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Plus, Star, TrendingUp, Film, Tv, Newspaper, Settings, Edit, Trash2, X, Upload, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -17,9 +17,11 @@ const App = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [expandedSeasons, setExpandedSeasons] = useState({});
   const [gradientPosition, setGradientPosition] = useState({ x: 50, y: 50 });
+  const [editingEpisode, setEditingEpisode] = useState(null);
+  const [episodeFormData, setEpisodeFormData] = useState({});
   
   // App version
-  const APP_VERSION = "1.2.0";
+  const APP_VERSION = "1.3.0";
 
   // Enhanced shows data with seasons and episodes
   const [shows, setShows] = useState([
@@ -40,6 +42,7 @@ const App = () => {
           seasonNumber: 1,
           episodes: [
             {
+              id: 1,
               episodeNumber: 1,
               title: "The Final Frontier",
               description: "The crew embarks on their maiden voyage into deep space, encountering unexpected challenges.",
@@ -48,6 +51,7 @@ const App = () => {
               image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&q=80"
             },
             {
+              id: 2,
               episodeNumber: 2,
               title: "First Contact",
               description: "The team makes an incredible discovery that could change humanity forever.",
@@ -61,6 +65,7 @@ const App = () => {
           seasonNumber: 2,
           episodes: [
             {
+              id: 3,
               episodeNumber: 1,
               title: "New Beginnings",
               description: "The crew faces new threats as they explore uncharted territories.",
@@ -89,64 +94,13 @@ const App = () => {
           seasonNumber: 1,
           episodes: [
             {
+              id: 4,
               episodeNumber: 1,
               title: "The First Case",
               description: "Detective Miller takes on his first impossible case in the dystopian city.",
               duration: 58,
               rating: 8.5,
               image: "https://images.unsplash.com/photo-1489599809505-f2d4c5f29a15?w=400&q=80"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 3,
-      title: "Quantum Leap",
-      type: "movie",
-      category: "Sci-Fi",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
-      description: "A physicist accidentally opens a portal to parallel universes and must find his way home.",
-      rating: 8.9,
-      runtime: 142,
-      cast: ["Ryan Gosling", "Lupita Nyong'o", "Mark Ruffalo"],
-      year: 2024
-    },
-    {
-      id: 4,
-      title: "Hearts Entwined",
-      type: "movie",
-      category: "Romance",
-      image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&q=80",
-      description: "Two strangers meet by chance in Paris and discover an unexpected connection that changes their lives.",
-      rating: 8.3,
-      runtime: 118,
-      cast: ["Florence Pugh", "Timothée Chalamet"],
-      year: 2024
-    },
-    {
-      id: 5,
-      title: "The Dragon's Realm",
-      type: "tvshow",
-      category: "Fantasy",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80",
-      description: "In a world where dragons rule the skies, a young warrior must unite the kingdoms against an ancient evil.",
-      rating: 9.1,
-      seasons: 4,
-      episodes: 32,
-      cast: ["Kit Harington", "Emilia Clarke", "Pedro Pascal"],
-      year: 2023,
-      seasonsData: [
-        {
-          seasonNumber: 1,
-          episodes: [
-            {
-              episodeNumber: 1,
-              title: "The Dragon's Call",
-              description: "A young warrior discovers his destiny in a world ruled by dragons.",
-              duration: 54,
-              rating: 9.0,
-              image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80"
             }
           ]
         }
@@ -161,21 +115,12 @@ const App = () => {
       date: "2 days ago",
       excerpt: "The hit sci-fi series gets the green light for another season following record-breaking viewership.",
       image: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&q=80"
-    },
-    {
-      id: 2,
-      title: "New Fantasy Series Coming Soon",
-      date: "1 week ago",
-      excerpt: "Apple TV announces groundbreaking new fantasy series set to premiere next month.",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80"
     }
   ]);
 
   const [chartData, setChartData] = useState([
     { name: "Emma Stone", trending: 98, shows: ["Stellar Horizons"], image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" },
-    { name: "Oscar Isaac", trending: 95, shows: ["Stellar Horizons"], image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" },
-    { name: "Ryan Gosling", trending: 87, shows: ["Quantum Leap"], image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
-    { name: "Florence Pugh", trending: 92, shows: ["The Last Detective", "Hearts Entwined"], image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" }
+    { name: "Oscar Isaac", trending: 95, shows: ["Stellar Horizons"], image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80" }
   ]);
 
   const [adminMode, setAdminMode] = useState('shows');
@@ -200,10 +145,10 @@ const App = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setGradientPosition(prev => ({
-        x: prev.x + (Math.random() - 0.5) * 10,
-        y: prev.y + (Math.random() - 0.5) * 10
+        x: Math.max(10, Math.min(90, prev.x + (Math.random() - 0.5) * 5)),
+        y: Math.max(10, Math.min(90, prev.y + (Math.random() - 0.5) * 5))
       }));
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
@@ -433,6 +378,63 @@ const App = () => {
     setAdminMode(type);
   };
 
+  // Episode management functions
+  const handleEditEpisode = (episode) => {
+    setEditingEpisode(episode);
+    setEpisodeFormData({
+      title: episode.title,
+      description: episode.description,
+      duration: episode.duration,
+      rating: episode.rating,
+      image: episode.image
+    });
+  };
+
+  const handleSaveEpisode = (e) => {
+    e.preventDefault();
+    
+    const updatedShows = shows.map(show => {
+      if (!show.seasonsData) return show;
+      
+      const updatedSeasonsData = show.seasonsData.map(season => ({
+        ...season,
+        episodes: season.episodes.map(ep => 
+          ep.id === editingEpisode.id 
+            ? { 
+                ...ep, 
+                title: episodeFormData.title,
+                description: episodeFormData.description,
+                duration: parseInt(episodeFormData.duration),
+                rating: parseFloat(episodeFormData.rating),
+                image: episodeFormData.image
+              }
+            : ep
+        )
+      }));
+      
+      return { ...show, seasonsData: updatedSeasonsData };
+    });
+    
+    setShows(updatedShows);
+    setEditingEpisode(null);
+    setEpisodeFormData({});
+  };
+
+  const handleDeleteEpisode = (episodeId) => {
+    const updatedShows = shows.map(show => {
+      if (!show.seasonsData) return show;
+      
+      const updatedSeasonsData = show.seasonsData.map(season => ({
+        ...season,
+        episodes: season.episodes.filter(ep => ep.id !== episodeId)
+      })).filter(season => season.episodes.length > 0);
+      
+      return { ...show, seasonsData: updatedSeasonsData };
+    });
+    
+    setShows(updatedShows);
+  };
+
   const filteredShows = shows.filter(show => 
     activeTab === 'movies' ? show.type === 'movie' : 
     activeTab === 'tvshows' ? show.type === 'tvshow' : 
@@ -467,17 +469,14 @@ const App = () => {
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div 
-            className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"
             style={{
-              animationDuration: '4s',
               transform: `translate(${(gradientPosition.x - 50) * 0.1}px, ${(gradientPosition.y - 50) * 0.1}px)`
             }}
           ></div>
           <div 
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
             style={{
-              animationDuration: '6s',
-              animationDelay: '1s',
               transform: `translate(${(50 - gradientPosition.x) * 0.1}px, ${(50 - gradientPosition.y) * 0.1}px)`
             }}
           ></div>
@@ -619,18 +618,18 @@ const App = () => {
   // Show Card Component
   const ShowCard = ({ show }) => (
     <div 
-      className="group relative overflow-hidden rounded-lg cursor-pointer transition-all duration-500 hover:scale-105 hover:z-10"
+      className="group relative overflow-hidden rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10"
       onClick={() => setSelectedShow(show)}
     >
       <div className="aspect-[16/9] relative">
         <img 
           src={show.image} 
           alt={show.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
         
-        <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+        <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
           <div className="flex items-center gap-2 mb-2">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
             <span className="text-white font-semibold text-sm">{show.rating}</span>
@@ -651,6 +650,82 @@ const App = () => {
       
       <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
         <span className="text-white text-xs font-semibold">{show.year}</span>
+      </div>
+    </div>
+  );
+
+  // Episode Editor Component
+  const EpisodeEditor = ({ episode, onSave, onCancel, onDelete }) => (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-2xl w-full p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-white">Edit Episode</h3>
+          <button onClick={onCancel} className="text-gray-400 hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={onSave} className="space-y-4">
+          <input 
+            type="text" 
+            placeholder="Episode Title" 
+            value={episodeFormData.title || ''}
+            onChange={(e) => setEpisodeFormData({...episodeFormData, title: e.target.value})}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            required
+          />
+          
+          <textarea 
+            placeholder="Episode Description" 
+            value={episodeFormData.description || ''}
+            onChange={(e) => setEpisodeFormData({...episodeFormData, description: e.target.value})}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24"
+            required
+          />
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Duration (minutes)</label>
+              <input 
+                type="number" 
+                placeholder="Duration" 
+                value={episodeFormData.duration || ''}
+                onChange={(e) => setEpisodeFormData({...episodeFormData, duration: e.target.value})}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Rating</label>
+              <input 
+                type="number" 
+                step="0.1" 
+                placeholder="Rating" 
+                value={episodeFormData.rating || ''}
+                onChange={(e) => setEpisodeFormData({...episodeFormData, rating: e.target.value})}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+          </div>
+          
+          <input 
+            type="text" 
+            placeholder="Image URL" 
+            value={episodeFormData.image || ''}
+            onChange={(e) => setEpisodeFormData({...episodeFormData, image: e.target.value})}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+          />
+          
+          <div className="flex gap-3 pt-4">
+            <button type="submit" className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+              Save Changes
+            </button>
+            <button type="button" onClick={() => onDelete(episode.id)} className="px-6 bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-all duration-300">
+              Delete
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -676,7 +751,7 @@ const App = () => {
       {expandedSeasons[season.seasonNumber] && (
         <div className="px-6 pb-6 space-y-4">
           {season.episodes.map(episode => (
-            <div key={episode.episodeNumber} className="flex gap-4 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-all duration-300">
+            <div key={episode.id} className="flex gap-4 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-all duration-300 group">
               <img 
                 src={episode.image} 
                 alt={episode.title}
@@ -692,11 +767,26 @@ const App = () => {
                 </div>
                 <p className="text-gray-300 text-sm mb-2">{episode.description}</p>
                 <div className="flex items-center gap-4 text-xs text-gray-400">
-                  <span>{episode.duration} min</span>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{episode.duration} min</span>
+                  </div>
                   <button className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
                     <Play className="w-3 h-3" />
                     Play Episode
                   </button>
+                  {isAdmin && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditEpisode(episode);
+                      }}
+                      className="flex items-center gap-1 text-green-400 hover:text-green-300 transition-colors ml-auto"
+                    >
+                      <Edit className="w-3 h-3" />
+                      Edit
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -715,7 +805,7 @@ const App = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all duration-300 hover:rotate-90 transform"
+            className="absolute top-6 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all duration-300"
           >
             ✕
           </button>
@@ -731,11 +821,11 @@ const App = () => {
               {show.runtime && <span className="text-gray-300">{show.runtime} min</span>}
             </div>
             <div className="flex gap-3">
-              <button className="bg-white text-black rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
+              <button className="bg-white text-black rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-gray-200 transition-all duration-300">
                 <Play className="w-6 h-6 fill-current" />
                 Play Now
               </button>
-              <button className="bg-white/20 backdrop-blur-sm text-white rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-white/30 transition-all duration-300 transform hover:scale-105">
+              <button className="bg-white/20 backdrop-blur-sm text-white rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-white/30 transition-all duration-300">
                 <Plus className="w-6 h-6" />
                 My List
               </button>
@@ -761,7 +851,7 @@ const App = () => {
               <h3 className="text-white font-bold text-xl mb-4">Cast</h3>
               <div className="flex flex-wrap gap-2">
                 {show.cast.map((actor, i) => (
-                  <span key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 transform">
+                  <span key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105">
                     {actor}
                   </span>
                 ))}
@@ -795,20 +885,20 @@ const App = () => {
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-6xl w-full my-8">
         <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 p-6 border-b border-slate-700 flex items-center justify-between z-10 rounded-t-3xl">
           <h2 className="text-3xl font-bold text-white">Admin Panel</h2>
-          <button onClick={() => { setShowAdminPanel(false); setFormData({}); setEditingItem(null); }} className="text-gray-400 hover:text-white transition-all duration-300 hover:rotate-90 transform">
+          <button onClick={() => { setShowAdminPanel(false); setFormData({}); setEditingItem(null); }} className="text-gray-400 hover:text-white transition-all duration-300">
             <X className="w-8 h-8" />
           </button>
         </div>
 
         <div className="p-6 max-h-[80vh] overflow-y-auto">
           <div className="flex gap-4 mb-6 flex-wrap">
-            <button onClick={() => { setAdminMode('shows'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${adminMode === 'shows' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
+            <button onClick={() => { setAdminMode('shows'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${adminMode === 'shows' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
               Shows & Movies
             </button>
-            <button onClick={() => { setAdminMode('news'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${adminMode === 'news' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
+            <button onClick={() => { setAdminMode('news'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${adminMode === 'news' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
               News
             </button>
-            <button onClick={() => { setAdminMode('actors'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${adminMode === 'actors' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
+            <button onClick={() => { setAdminMode('actors'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${adminMode === 'actors' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
               Chart (Actors)
             </button>
           </div>
@@ -870,16 +960,16 @@ const App = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Manage Shows & Movies</h3>
                 <div className="space-y-3">
                   {shows.map(show => (
-                    <div key={show.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70">
+                    <div key={show.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70 transition-all duration-300">
                       <img src={show.image} alt={show.title} className="w-16 h-12 object-cover rounded-lg" />
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">{show.title}</h4>
                         <p className="text-gray-400 text-sm">{show.category} • {show.year}</p>
                       </div>
-                      <button onClick={() => handleEdit('shows', show)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      <button onClick={() => handleEdit('shows', show)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete('shows', show.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <button onClick={() => handleDelete('shows', show.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -925,16 +1015,16 @@ const App = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Manage News</h3>
                 <div className="space-y-3">
                   {news.map(item => (
-                    <div key={item.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70">
+                    <div key={item.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70 transition-all duration-300">
                       <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">{item.title}</h4>
                         <p className="text-gray-400 text-sm">{item.date}</p>
                       </div>
-                      <button onClick={() => handleEdit('news', item)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      <button onClick={() => handleEdit('news', item)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete('news', item.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <button onClick={() => handleDelete('news', item.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -980,16 +1070,16 @@ const App = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Manage Actors</h3>
                 <div className="space-y-3">
                   {chartData.map(actor => (
-                    <div key={actor.name} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70">
+                    <div key={actor.name} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70 transition-all duration-300">
                       <img src={actor.image} alt={actor.name} className="w-16 h-16 object-cover rounded-full" />
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">{actor.name}</h4>
                         <p className="text-gray-400 text-sm">Score: {actor.trending}</p>
                       </div>
-                      <button onClick={() => handleEdit('actors', actor)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      <button onClick={() => handleEdit('actors', actor)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete('actors', actor.name)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <button onClick={() => handleDelete('actors', actor.name)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1009,7 +1099,7 @@ const App = () => {
       <div className="max-w-[1600px] mx-auto px-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-400 text-sm">
-            © 2024 Apple TV Clone. All rights reserved.
+            © 2025 ATV / Blackwell Studios
           </div>
           <div className="flex items-center gap-6 mt-4 md:mt-0">
             <span className="text-gray-500 text-sm">Version {APP_VERSION}</span>
@@ -1037,19 +1127,19 @@ const App = () => {
             transparent 50%),
           linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a)
         `,
-        transition: 'background 0.3s ease'
+        transition: 'background 0.5s ease'
       }}
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div 
-          className="absolute top-20 left-20 w-64 h-64 bg-blue-600/10 rounded-full blur-2xl animate-pulse"
+          className="absolute top-20 left-20 w-64 h-64 bg-blue-600/10 rounded-full blur-2xl"
           style={{
             transform: `translate(${(gradientPosition.x - 50) * 0.05}px, ${(gradientPosition.y - 50) * 0.05}px)`
           }}
         ></div>
         <div 
-          className="absolute bottom-20 right-20 w-64 h-64 bg-purple-600/10 rounded-full blur-2xl animate-pulse"
+          className="absolute bottom-20 right-20 w-64 h-64 bg-purple-600/10 rounded-full blur-2xl"
           style={{
             transform: `translate(${(50 - gradientPosition.x) * 0.05}px, ${(50 - gradientPosition.y) * 0.05}px)`
           }}
@@ -1057,15 +1147,6 @@ const App = () => {
       </div>
 
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        
-        .floating-element {
-          animation: float 6s ease-in-out infinite;
-        }
-        
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -1083,36 +1164,28 @@ const App = () => {
               <nav className="flex gap-8">
                 <button 
                   onClick={() => setActiveTab('tvshows')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    activeTab === 'tvshows' ? 'text-white' : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${activeTab === 'tvshows' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   <Tv className="w-5 h-5" />
                   TV Shows
                 </button>
                 <button 
                   onClick={() => setActiveTab('movies')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    activeTab === 'movies' ? 'text-white' : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${activeTab === 'movies' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   <Film className="w-5 h-5" />
                   Movies
                 </button>
                 <button 
                   onClick={() => setActiveTab('news')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    activeTab === 'news' ? 'text-white' : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${activeTab === 'news' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   <Newspaper className="w-5 h-5" />
                   News
                 </button>
                 <button 
                   onClick={() => setActiveTab('chart')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    activeTab === 'chart' ? 'text-white' : 'text-gray-400 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${activeTab === 'chart' ? 'text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   <TrendingUp className="w-5 h-5" />
                   Chart
@@ -1124,7 +1197,7 @@ const App = () => {
               {isAdmin && (
                 <button 
                   onClick={() => setShowAdminPanel(true)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
                 >
                   <Settings className="w-4 h-4" />
                   Admin
@@ -1138,7 +1211,7 @@ const App = () => {
                     setIsAdmin(false);
                     setCurrentUser(null);
                   }}
-                  className="text-gray-400 hover:text-white text-sm font-semibold transition-all duration-300"
+                  className="text-gray-400 hover:text-white text-sm font-semibold transition-colors duration-300"
                 >
                   Sign Out
                 </button>
@@ -1173,7 +1246,7 @@ const App = () => {
             
             <div className="grid gap-6">
               {news.map(item => (
-                <div key={item.id} className="bg-gradient-to-r from-slate-800/50 to-slate-800/30 backdrop-blur-sm rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-500 cursor-pointer">
+                <div key={item.id} className="bg-gradient-to-r from-slate-800/50 to-slate-800/30 backdrop-blur-sm rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-300 cursor-pointer">
                   <div className="flex gap-6">
                     <img src={item.image} alt={item.title} className="w-64 h-48 object-cover" />
                     <div className="flex-1 p-6 flex flex-col justify-center">
@@ -1226,6 +1299,14 @@ const App = () => {
 
       {selectedShow && <Modal show={selectedShow} onClose={() => setSelectedShow(null)} />}
       {showAdminPanel && <AdminPanel />}
+      {editingEpisode && (
+        <EpisodeEditor 
+          episode={editingEpisode}
+          onSave={handleSaveEpisode}
+          onCancel={() => setEditingEpisode(null)}
+          onDelete={handleDeleteEpisode}
+        />
+      )}
     </div>
   );
 };
