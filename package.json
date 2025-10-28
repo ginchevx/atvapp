@@ -1,6 +1,5 @@
 {
-  "name": "appletv-clone",
-  "private": true,
+  "name": "apple-tv-clone",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
