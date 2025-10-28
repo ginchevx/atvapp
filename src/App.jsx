@@ -1,78 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Plus, Star, TrendingUp, Film, Tv, Newspaper, Settings, Edit, Trash2, X, Upload, ChevronDown, ChevronUp, Clock, Download, UploadCloud, Zap, Users, Calendar, Heart, Share2, Bookmark } from 'lucide-react';
-
-// Simple storage utility
-const createStorage = () => ({
-  saveAllData: async (data) => {
-    try {
-      const dataToSave = JSON.stringify(data);
-      if (typeof window !== 'undefined') {
-        const savedData = { ...data, _timestamp: new Date().toISOString() };
-        const state = { data: savedData };
-        sessionStorage.setItem('appletv_temp', JSON.stringify(state));
-      }
-      return true;
-    } catch (error) {
-      console.error('Error saving data:', error);
-      return false;
-    }
-  },
-  loadAllData: async () => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = sessionStorage.getItem('appletv_temp');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          return parsed.data || null;
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error('Error loading data:', error);
-      return null;
-    }
-  },
-  exportData: () => {
-    try {
-      if (typeof window !== 'undefined') {
-        const data = sessionStorage.getItem('appletv_temp');
-        if (data) {
-          const blob = new Blob([data], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `appletv-backup-${new Date().toISOString().split('T')[0]}.json`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }
-      }
-    } catch (error) {
-      console.error('Error exporting data:', error);
-    }
-  },
-  importData: (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('appletv_temp', e.target.result);
-          }
-          resolve(true);
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsText(file);
-    });
-  }
-});
-
-const storage = createStorage();
+import { Play, Plus, Star, TrendingUp, Film, Tv, Newspaper, Settings, Edit, Trash2, X, ChevronDown, Clock, Download, UploadCloud, Zap, Calendar, Heart, Share2, Bookmark } from 'lucide-react';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -92,9 +19,6 @@ const App = () => {
   const [gradientPosition, setGradientPosition] = useState({ x: 50, y: 50 });
   const [editingEpisode, setEditingEpisode] = useState(null);
   const [episodeFormData, setEpisodeFormData] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState('');
-  const fileInputRef = useRef(null);
   
   const APP_VERSION = "2.0.0";
 
@@ -164,6 +88,7 @@ const App = () => {
         seasonsData: [
           {
             seasonNumber: 1,
+            year: 2023,
             episodes: [
               {
                 id: 3,
@@ -228,75 +153,20 @@ const App = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGradientPosition(prev => ({
-        x: Math.max(20, Math.min(80, prev.x + (Math.random() - 0.5) * 4)),
-        y: Math.max(20, Math.min(80, prev.y + (Math.random() - 0.5) * 4))
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const savedData = await storage.loadAllData();
-        if (savedData && savedData.shows) {
-          setData(prev => ({ ...prev, ...savedData }));
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    const saveData = async () => {
-      if (!isLoading) {
-        setSaveStatus('Saving...');
-        const success = await storage.saveAllData(data);
-        setSaveStatus(success ? 'Saved' : 'Error saving');
-        setTimeout(() => setSaveStatus(''), 2000);
-      }
-    };
-
-    const timeoutId = setTimeout(saveData, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [data, isLoading]);
-
   const handleLogin = (e) => {
     e.preventDefault();
     setLoginError('');
     
-    try {
-      const users = typeof window !== 'undefined' 
-        ? JSON.parse(sessionStorage.getItem('appletv_users') || '{}')
-        : {};
-      const userData = users[loginEmail];
-      
-      if (!userData) {
-        setLoginError('Account not found. Please sign up first.');
-        return;
-      }
-      
-      if (userData.password !== loginPassword) {
-        setLoginError('Incorrect password. Please try again.');
-        return;
-      }
-      
+    const testEmail = 'admin@apple.tv';
+    const testPassword = 'admin123';
+    
+    if (loginEmail === testEmail && loginPassword === testPassword) {
+      const userData = { email: loginEmail, isAdmin: true };
       setCurrentUser(userData);
       setIsLoggedIn(true);
-      setIsAdmin(userData.isAdmin || false);
-    } catch (error) {
-      setLoginError('Error logging in. Please try again.');
-      console.error('Login error:', error);
+      setIsAdmin(true);
+    } else {
+      setLoginError('Invalid credentials. Try admin@apple.tv / admin123');
     }
   };
 
@@ -314,37 +184,16 @@ const App = () => {
       return;
     }
     
-    try {
-      const users = typeof window !== 'undefined'
-        ? JSON.parse(sessionStorage.getItem('appletv_users') || '{}')
-        : {};
-      
-      if (users[signupEmail]) {
-        setLoginError('An account with this email already exists.');
-        return;
-      }
-      
-      const isAdminEmail = signupEmail === 'admin@apple.tv' || signupEmail === 'ginchevalex@gmail.com';
-      
-      const userData = {
-        email: signupEmail,
-        password: signupPassword,
-        isAdmin: isAdminEmail,
-        createdAt: new Date().toISOString()
-      };
-      
-      users[signupEmail] = userData;
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('appletv_users', JSON.stringify(users));
-      }
-      
-      setCurrentUser(userData);
-      setIsLoggedIn(true);
-      setIsAdmin(userData.isAdmin);
-    } catch (error) {
-      setLoginError('Error creating account. Please try again.');
-      console.error('Signup error:', error);
-    }
+    const isAdminEmail = signupEmail === 'admin@apple.tv';
+    const userData = {
+      email: signupEmail,
+      isAdmin: isAdminEmail,
+      createdAt: new Date().toISOString()
+    };
+    
+    setCurrentUser(userData);
+    setIsLoggedIn(true);
+    setIsAdmin(userData.isAdmin);
   };
 
   const toggleSeason = (seasonNumber, showId) => {
@@ -377,7 +226,7 @@ const App = () => {
       ...(formData.type === 'tvshow' ? {
         seasons: parseInt(formData.seasons) || 0,
         episodes: parseInt(formData.episodes) || 0,
-        seasonsData: formData.seasonsData || []
+        seasonsData: []
       } : {
         runtime: parseInt(formData.runtime) || 0
       })
@@ -387,46 +236,6 @@ const App = () => {
       updateData('shows', shows.map(s => s.id === editingItem.id ? newShow : s));
     } else {
       updateData('shows', [...shows, newShow]);
-    }
-    setEditingItem(null);
-    setFormData({});
-  };
-
-  const handleAddNews = (e) => {
-    e.preventDefault();
-    const newNews = {
-      id: editingItem?.id || Date.now(),
-      title: formData.title,
-      date: formData.date || 'Just now',
-      excerpt: formData.excerpt,
-      image: formData.image,
-      category: formData.category,
-      author: formData.author
-    };
-
-    if (editingItem) {
-      updateData('news', news.map(n => n.id === editingItem.id ? newNews : n));
-    } else {
-      updateData('news', [...news, newNews]);
-    }
-    setEditingItem(null);
-    setFormData({});
-  };
-
-  const handleAddActor = (e) => {
-    e.preventDefault();
-    const newActor = {
-      name: formData.name,
-      trending: parseInt(formData.trending),
-      shows: formData.shows ? formData.shows.split(',').map(s => s.trim()) : [],
-      image: formData.image,
-      bio: formData.bio
-    };
-
-    if (editingItem) {
-      updateData('actors', actors.map(a => a.name === editingItem.name ? newActor : a));
-    } else {
-      updateData('actors', [...actors, newActor]);
     }
     setEditingItem(null);
     setFormData({});
@@ -459,23 +268,6 @@ const App = () => {
         episodes: item.episodes,
         runtime: item.runtime
       });
-    } else if (type === 'news') {
-      setFormData({
-        title: item.title,
-        date: item.date,
-        excerpt: item.excerpt,
-        image: item.image,
-        category: item.category,
-        author: item.author
-      });
-    } else if (type === 'actors') {
-      setFormData({
-        name: item.name,
-        trending: item.trending,
-        shows: item.shows.join(', '),
-        image: item.image,
-        bio: item.bio
-      });
     }
     setAdminMode(type);
   };
@@ -496,71 +288,21 @@ const App = () => {
 
   const handleSaveEpisode = (e) => {
     e.preventDefault();
-    
     const updatedShows = shows.map(show => {
       if (!show.seasonsData) return show;
-      
       const updatedSeasonsData = show.seasonsData.map(season => ({
         ...season,
         episodes: season.episodes.map(ep => 
           ep.id === editingEpisode.id 
-            ? { 
-                ...ep, 
-                title: episodeFormData.title,
-                description: episodeFormData.description,
-                duration: parseInt(episodeFormData.duration),
-                rating: parseFloat(episodeFormData.rating),
-                image: episodeFormData.image,
-                director: episodeFormData.director,
-                writer: episodeFormData.writer,
-                releaseDate: episodeFormData.releaseDate
-              }
+            ? { ...ep, ...episodeFormData, duration: parseInt(episodeFormData.duration), rating: parseFloat(episodeFormData.rating) }
             : ep
         )
       }));
-      
       return { ...show, seasonsData: updatedSeasonsData };
     });
     
     updateData('shows', updatedShows);
     setEditingEpisode(null);
-    setEpisodeFormData({});
-  };
-
-  const handleDeleteEpisode = (episodeId) => {
-    if (window.confirm('Are you sure you want to delete this episode?')) {
-      const updatedShows = shows.map(show => {
-        if (!show.seasonsData) return show;
-        
-        const updatedSeasonsData = show.seasonsData.map(season => ({
-          ...season,
-          episodes: season.episodes.filter(ep => ep.id !== episodeId)
-        })).filter(season => season.episodes.length > 0);
-        
-        return { ...show, seasonsData: updatedSeasonsData };
-      });
-      
-      updateData('shows', updatedShows);
-      setEditingEpisode(null);
-    }
-  };
-
-  const handleImportClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        await storage.importData(file);
-        window.location.reload();
-      } catch (error) {
-        alert('Error importing file: ' + error.message);
-      }
-    }
   };
 
   const ShowCard = ({ show }) => {
@@ -568,32 +310,17 @@ const App = () => {
       'Sci-Fi': 'from-purple-600 to-blue-600',
       'Action': 'from-red-500 to-orange-500',
       'Drama': 'from-green-500 to-emerald-600',
-      'Comedy': 'from-yellow-500 to-amber-500',
-      'Fantasy': 'from-indigo-500 to-purple-600',
-      'Romance': 'from-pink-500 to-rose-500',
-      'Crime': 'from-gray-600 to-slate-700',
-      'Horror': 'from-red-600 to-rose-700',
-      'Thriller': 'from-orange-600 to-red-600',
-      'Documentary': 'from-teal-500 to-cyan-600'
+      'Crime': 'from-gray-600 to-slate-700'
     };
-
-    const gradient = categoryColors[show.category] || 'from-blue-600 to-purple-600';
 
     return (
       <div 
-        className="group relative cursor-pointer transition-all duration-500 hover:scale-105 hover:z-20"
+        className="group relative cursor-pointer transition-all duration-500 hover:scale-105"
         onClick={() => setSelectedShow(show)}
       >
-        <div className={`absolute inset-0 bg-gradient-to-r ${gradient} rounded-2xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-500 -z-10`}></div>
-        
-        <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-800 border border-slate-700 group-hover:border-slate-500 transition-all duration-500">
-          <img 
-            src={show.image} 
-            alt={show.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+        <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-slate-800 border border-slate-700">
+          <img src={show.image} alt={show.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
           
           <div className="absolute top-3 left-3 flex gap-2">
             {show.isTrending && (
@@ -602,18 +329,13 @@ const App = () => {
                 Trending
               </span>
             )}
-            {show.isFeatured && (
-              <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                Featured
-              </span>
-            )}
           </div>
           
-          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20">
+          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-sm px-2 py-1 rounded-full">
             <span className="text-white text-xs font-semibold">{show.year}</span>
           </div>
           
-          <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+          <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-500">
             <div className="flex items-center gap-2 mb-2">
               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
               <span className="text-white font-bold text-sm">{show.rating}</span>
@@ -621,47 +343,22 @@ const App = () => {
               <span className="text-gray-300 text-sm">{show.category}</span>
             </div>
             
-            <h3 className="text-white font-bold text-lg mb-2 leading-tight">{show.title}</h3>
-            <p className="text-gray-300 text-xs line-clamp-2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-              {show.description}
-            </p>
+            <h3 className="text-white font-bold text-lg mb-2">{show.title}</h3>
+            <p className="text-gray-300 text-xs line-clamp-2 mb-3">{show.description}</p>
             
-            <div className="flex flex-wrap gap-1 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200">
-              {show.tags?.slice(0, 2).map((tag, i) => (
-                <span key={i} className="bg-white/20 text-white px-2 py-1 rounded text-xs">
-                  {tag}
-                </span>
-              ))}
-            </div>
-            
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300">
+            <div className="flex gap-2">
               <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert('Playing ' + show.title);
-                }}
-                className="flex-1 bg-white text-black rounded-lg py-2 px-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105"
+                onClick={(e) => { e.stopPropagation(); alert('Playing ' + show.title); }}
+                className="flex-1 bg-white text-black rounded-lg py-2 px-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-200"
               >
                 <Play className="w-4 h-4 fill-current" />
                 Play
               </button>
               <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert('Added to list');
-                }}
-                className="bg-white/20 backdrop-blur-sm text-white rounded-lg p-2 hover:bg-white/30 transition-all duration-300 transform hover:scale-105 border border-white/30"
+                onClick={(e) => { e.stopPropagation(); alert('Added to list'); }}
+                className="bg-white/20 backdrop-blur-sm text-white rounded-lg p-2 hover:bg-white/30"
               >
                 <Plus className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert('Added to favorites');
-                }}
-                className="bg-white/20 backdrop-blur-sm text-white rounded-lg p-2 hover:bg-white/30 transition-all duration-300 transform hover:scale-105 border border-white/30"
-              >
-                <Heart className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -671,96 +368,45 @@ const App = () => {
   };
 
   const EpisodeCard = ({ episode, onEdit, isAdmin }) => (
-    <div className="flex gap-4 p-4 bg-slate-800/40 rounded-xl hover:bg-slate-700/60 transition-all duration-500 group border border-slate-700/50 hover:border-slate-600/50">
-      <img 
-        src={episode.image} 
-        alt={episode.title}
-        className="w-32 h-20 object-cover rounded-lg flex-shrink-0 transition-transform duration-500 group-hover:scale-105"
-      />
-      <div className="flex-1 min-w-0">
+    <div className="flex gap-4 p-4 bg-slate-800/40 rounded-xl hover:bg-slate-700/60 transition-all group border border-slate-700/50">
+      <img src={episode.image} alt={episode.title} className="w-32 h-20 object-cover rounded-lg" />
+      <div className="flex-1">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
-            <h5 className="text-lg font-semibold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-purple-400 transition-all duration-500">
-              Episode {episode.episodeNumber}: {episode.title}
-            </h5>
+            <h5 className="text-lg font-semibold text-white">Episode {episode.episodeNumber}: {episode.title}</h5>
             <div className="flex items-center gap-3 mt-1">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-white text-sm font-medium">{episode.rating}</span>
+                <span className="text-white text-sm">{episode.rating}</span>
               </div>
               <div className="flex items-center gap-1 text-gray-400 text-sm">
                 <Clock className="w-3 h-3" />
                 <span>{episode.duration} min</span>
               </div>
-              {episode.releaseDate && (
-                <div className="flex items-center gap-1 text-gray-400 text-sm">
-                  <Calendar className="w-3 h-3" />
-                  <span>{new Date(episode.releaseDate).toLocaleDateString()}</span>
-                </div>
-              )}
             </div>
           </div>
           
           {isAdmin && (
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(episode);
-                }}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110"
-              >
-                <Edit className="w-3 h-3" />
-              </button>
-            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); onEdit(episode); }}
+              className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 opacity-0 group-hover:opacity-100"
+            >
+              <Edit className="w-3 h-3" />
+            </button>
           )}
         </div>
         
-        <p className="text-gray-300 text-sm mb-3 leading-relaxed">{episode.description}</p>
+        <p className="text-gray-300 text-sm mb-3">{episode.description}</p>
         
-        {(episode.director || episode.writer) && (
-          <div className="flex flex-wrap gap-4 text-xs text-gray-400 mb-3">
-            {episode.director && <span>Director: {episode.director}</span>}
-            {episode.writer && <span>Writer: {episode.writer}</span>}
+        <button 
+          onClick={(e) => { e.stopPropagation(); alert('Playing episode: ' + episode.title); }}
+          className="flex items-center gap-2 text-blue-400 hover:text-blue-300"
+        >
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+            <Play className="w-3 h-3 fill-current text-white" />
           </div>
-        )}
-        
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              alert('Playing episode: ' + episode.title);
-            }}
-            className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors duration-300 group/play"
-          >
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center group-hover/play:bg-blue-500 transition-colors duration-300">
-              <Play className="w-3 h-3 fill-current text-white" />
-            </div>
-            <span className="text-sm font-medium">Play Episode</span>
-          </button>
-          
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              alert('Episode saved');
-            }}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300"
-          >
-            <Bookmark className="w-4 h-4" />
-            <span className="text-sm">Save</span>
-          </button>
-          
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              alert('Sharing episode');
-            }}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300"
-          >
-            <Share2 className="w-4 h-4" />
-            <span className="text-sm">Share</span>
-          </button>
-        </div>
+          <span className="text-sm font-medium">Play Episode</span>
+        </button>
       </div>
     </div>
   );
@@ -770,46 +416,27 @@ const App = () => {
     const isExpanded = expandedSeasons[key];
 
     return (
-      <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-lg rounded-2xl mb-4 overflow-hidden border border-slate-700/50 hover:border-slate-600/50 transition-all duration-500">
+      <div className="bg-slate-800/60 rounded-2xl mb-4 overflow-hidden border border-slate-700/50">
         <button
           onClick={() => toggleSeason(season.seasonNumber, showId)}
-          className="w-full p-6 text-left flex items-center justify-between hover:bg-slate-700/30 transition-all duration-500 group"
+          className="w-full p-6 text-left flex items-center justify-between hover:bg-slate-700/30 transition-all"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
               {season.seasonNumber}
             </div>
             <div>
-              <h4 className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-blue-400 transition-all duration-500">
-                Season {season.seasonNumber}
-              </h4>
-              <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                {season.episodes.length} episodes • {season.year}
-              </p>
-              {season.description && (
-                <p className="text-gray-500 text-sm mt-1">{season.description}</p>
-              )}
+              <h4 className="text-xl font-bold text-white">Season {season.seasonNumber}</h4>
+              <p className="text-gray-400">{season.episodes.length} episodes • {season.year}</p>
             </div>
           </div>
-          <div className={`transform transition-all duration-500 ${isExpanded ? 'rotate-180' : ''}`}>
-            <ChevronDown className="w-6 h-6 text-gray-400 group-hover:text-white transition-colors duration-300" />
-          </div>
+          <ChevronDown className={`w-6 h-6 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
         </button>
         
-        <div
-          className={`transition-all duration-500 ease-in-out ${
-            isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
-          style={{ overflow: 'hidden' }}
-        >
+        <div className={`transition-all duration-500 ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
           <div className="px-6 pb-6 space-y-4">
             {season.episodes.map(episode => (
-              <EpisodeCard 
-                key={episode.id} 
-                episode={episode} 
-                onEdit={handleEditEpisode}
-                isAdmin={isAdmin}
-              />
+              <EpisodeCard key={episode.id} episode={episode} onEdit={handleEditEpisode} isAdmin={isAdmin} />
             ))}
           </div>
         </div>
@@ -817,164 +444,36 @@ const App = () => {
     );
   };
 
-  const EpisodeEditor = ({ episode, onSave, onCancel, onDelete }) => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-white">Edit Episode</h3>
-          <button onClick={onCancel} className="text-gray-400 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-        
-        <form onSubmit={onSave} className="space-y-4">
-          <input 
-            type="text" 
-            placeholder="Episode Title" 
-            value={episodeFormData.title || ''}
-            onChange={(e) => setEpisodeFormData({...episodeFormData, title: e.target.value})}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-            required
-          />
-          
-          <textarea 
-            placeholder="Episode Description" 
-            value={episodeFormData.description || ''}
-            onChange={(e) => setEpisodeFormData({...episodeFormData, description: e.target.value})}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24"
-            required
-          />
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Duration (minutes)</label>
-              <input 
-                type="number" 
-                placeholder="Duration" 
-                value={episodeFormData.duration || ''}
-                onChange={(e) => setEpisodeFormData({...episodeFormData, duration: e.target.value})}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Rating</label>
-              <input 
-                type="number" 
-                step="0.1" 
-                placeholder="Rating" 
-                value={episodeFormData.rating || ''}
-                onChange={(e) => setEpisodeFormData({...episodeFormData, rating: e.target.value})}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Director</label>
-              <input 
-                type="text" 
-                placeholder="Director" 
-                value={episodeFormData.director || ''}
-                onChange={(e) => setEpisodeFormData({...episodeFormData, director: e.target.value})}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">Writer</label>
-              <input 
-                type="text" 
-                placeholder="Writer" 
-                value={episodeFormData.writer || ''}
-                onChange={(e) => setEpisodeFormData({...episodeFormData, writer: e.target.value})}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">Release Date</label>
-            <input 
-              type="date" 
-              value={episodeFormData.releaseDate || ''}
-              onChange={(e) => setEpisodeFormData({...episodeFormData, releaseDate: e.target.value})}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-            />
-          </div>
-          
-          <input 
-            type="text" 
-            placeholder="Image URL" 
-            value={episodeFormData.image || ''}
-            onChange={(e) => setEpisodeFormData({...episodeFormData, image: e.target.value})}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-          />
-          
-          <div className="flex gap-3 pt-4">
-            <button type="submit" className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-              Save Changes
-            </button>
-            <button type="button" onClick={() => onDelete(episode.id)} className="px-6 bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-all duration-300">
-              Delete
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-
   const Modal = ({ show, onClose }) => (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8" onClick={onClose}>
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-slate-900 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
         <div className="relative h-96">
           <img src={show.image} alt={show.title} className="w-full h-full object-cover rounded-t-3xl" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
-          <button 
-            onClick={onClose}
-            className="absolute top-6 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all duration-300"
-          >
+          <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white">
             <X className="w-5 h-5" />
           </button>
           <div className="absolute bottom-8 left-8 right-8">
             <h2 className="text-5xl font-bold text-white mb-4">{show.title}</h2>
             <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                <span className="text-white font-bold text-lg">{show.rating}</span>
+                <span className="text-white font-bold">{show.rating}</span>
               </div>
-              <span className="text-gray-300 font-semibold">{show.year}</span>
+              <span className="text-gray-300">{show.year}</span>
               {show.seasons && <span className="text-gray-300">{show.seasons} Seasons</span>}
-              {show.runtime && <span className="text-gray-300">{show.runtime} min</span>}
             </div>
             <div className="flex gap-3">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert('Playing: ' + show.title);
-                }}
-                className="bg-white text-black rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-gray-200 transition-all duration-300"
-              >
+              <button onClick={(e) => { e.stopPropagation(); alert('Playing: ' + show.title); }} className="bg-white text-black rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-gray-200">
                 <Play className="w-6 h-6 fill-current" />
                 Play Now
-              </button>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert('Added to My List');
-                }}
-                className="bg-white/20 backdrop-blur-sm text-white rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-white/30 transition-all duration-300"
-              >
-                <Plus className="w-6 h-6" />
-                My List
               </button>
             </div>
           </div>
         </div>
         
         <div className="p-8">
-          <p className="text-gray-300 text-lg mb-8 leading-relaxed">{show.description}</p>
+          <p className="text-gray-300 text-lg mb-8">{show.description}</p>
           
           {show.type === 'tvshow' && show.seasonsData && (
             <div className="mb-8">
@@ -984,165 +483,299 @@ const App = () => {
               ))}
             </div>
           )}
-          
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-white font-bold text-xl mb-4">Cast</h3>
-              <div className="flex flex-wrap gap-2">
-                {show.cast.map((actor, i) => (
-                  <span key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105">
-                    {actor}
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            {show.episodes && (
-              <div>
-                <h3 className="text-white font-bold text-xl mb-4">Series Info</h3>
-                <div className="space-y-3">
-                  <div className="bg-slate-800/50 rounded-xl p-4">
-                    <div className="text-white text-2xl font-bold">{show.episodes}</div>
-                    <div className="text-gray-400 text-sm">Total Episodes</div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-xl p-4">
-                    <div className="text-white text-2xl font-bold">{show.seasons}</div>
-                    <div className="text-gray-400 text-sm">Seasons</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
   );
 
   const AdminPanel = () => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-6xl w-full my-8">
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 p-6 border-b border-slate-700 flex items-center justify-between z-10 rounded-t-3xl">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-slate-900 rounded-3xl max-w-4xl w-full p-6">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-white">Admin Panel</h2>
-          <button onClick={() => { setShowAdminPanel(false); setFormData({}); setEditingItem(null); }} className="text-gray-400 hover:text-white transition-all duration-300">
+          <button onClick={() => setShowAdminPanel(false)} className="text-gray-400 hover:text-white">
             <X className="w-8 h-8" />
           </button>
         </div>
+        
+        <form onSubmit={handleAddShow} className="space-y-4">
+          <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white" required />
+          <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white h-24" required />
+          <input type="number" step="0.1" placeholder="Rating" value={formData.rating || ''} onChange={(e) => setFormData({...formData, rating: e.target.value})} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white" required />
+          <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700">
+            Add Show
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <button onClick={() => { setAdminMode('shows'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${adminMode === 'shows' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
-              Shows & Movies
-            </button>
-            <button onClick={() => { setAdminMode('news'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${adminMode === 'news' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
-              News
-            </button>
-            <button onClick={() => { setAdminMode('actors'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${adminMode === 'actors' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
-              Chart (Actors)
-            </button>
+  const filteredShows = shows.filter(show => 
+    activeTab === 'movies' ? show.type === 'movie' : 
+    activeTab === 'tvshows' ? show.type === 'tvshow' : 
+    true
+  );
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="w-full max-w-md">
+          <h1 className="text-6xl font-black text-white mb-8 text-center bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Apple TV+</h1>
+          
+          <div className="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-6 text-center">{showSignup ? 'Join' : 'Welcome'}</h2>
+
+            {loginError && <div className="mb-4 bg-red-500/20 border border-red-500/50 rounded-xl p-4"><p className="text-red-300 text-sm text-center">{loginError}</p></div>}
+
+            {!showSignup ? (
+              <form onSubmit={handleLogin} className="space-y-6">
+                <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="Email" className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white" required />
+                <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="Password" className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white" required />
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700">Sign In</button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignup} className="space-y-6">
+                <input type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} placeholder="Email" className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white" required />
+                <input type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} placeholder="Password" className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white" required />
+                <input type="password" value={signupConfirmPassword} onChange={(e) => setSignupConfirmPassword(e.target.value)} placeholder="Confirm Password" className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white" required />
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl">Create Account</button>
+              </form>
+            )}
+
+            <div className="mt-6 text-center">
+              <button onClick={() => setShowSignup(!showSignup)} className="text-blue-400 hover:text-blue-300 font-semibold">
+                {showSignup ? 'Sign in instead' : 'Create account'}
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          {adminMode === 'shows' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-slate-800/50 rounded-2xl p-6">
-                <h3 className="text-2xl font-bold text-white mb-6">{editingItem ? 'Edit' : 'Add'} Show/Movie</h3>
-                <form onSubmit={handleAddShow} className="space-y-4">
-                  <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  
-                  <select value={formData.type || 'tvshow'} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
-                    <option value="tvshow">TV Show</option>
-                    <option value="movie">Movie</option>
-                  </select>
+  return (
+    <div className="min-h-screen bg-slate-950">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-12">
+            <h1 className="text-2xl font-black text-white bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Apple TV+</h1>
+            
+            <nav className="flex gap-8">
+              {['tvshows', 'movies', 'news', 'chart'].map((tab) => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`flex items-center gap-3 text-lg font-semibold px-4 py-2 rounded-2xl ${activeTab === tab ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}>
+                  {tab === 'tvshows' && <Tv className="w-5 h-5" />}
+                  {tab === 'movies' && <Film className="w-5 h-5" />}
+                  {tab === 'news' && <Newspaper className="w-5 h-5" />}
+                  {tab === 'chart' && <TrendingUp className="w-5 h-5" />}
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </nav>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {isAdmin && (
+              <button onClick={() => setShowAdminPanel(true)} className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-xl font-semibold">
+                <Settings className="w-4 h-4" />
+                Admin
+              </button>
+            )}
+            
+            <div className="flex items-center gap-3">
+              <span className="text-gray-400 text-sm">{currentUser?.email}</span>
+              <button onClick={() => { setIsLoggedIn(false); setIsAdmin(false); setCurrentUser(null); }} className="text-gray-400 hover:text-white text-sm font-semibold">
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-                  <select value={formData.category || 'Action'} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-300">Image</label>
-                    <input type="text" placeholder="Image URL" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                    {formData.image && <img src={formData.image} alt="Preview" className="w-full h-32 object-cover rounded-xl" />}
-                  </div>
-                  
-                  <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24" required />
-                  <input type="number" step="0.1" placeholder="Rating" value={formData.rating || ''} onChange={(e) => setFormData({...formData, rating: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="number" placeholder="Year" value={formData.year || ''} onChange={(e) => setFormData({...formData, year: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="text" placeholder="Cast (comma separated)" value={formData.cast || ''} onChange={(e) => setFormData({...formData, cast: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  <input type="text" placeholder="Tags (comma separated)" value={formData.tags || ''} onChange={(e) => setFormData({...formData, tags: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
-                      <input type="checkbox" checked={formData.isTrending || false} onChange={(e) => setFormData({...formData, isTrending: e.target.checked})} className="rounded bg-slate-700 border-slate-600" />
-                      Trending
-                    </label>
-                    <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
-                      <input type="checkbox" checked={formData.isFeatured || false} onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})} className="rounded bg-slate-700 border-slate-600" />
-                      Featured
-                    </label>
-                  </div>
-
-                  {formData.type === 'tvshow' ? (
-                    <>
-                      <input type="number" placeholder="Seasons" value={formData.seasons || ''} onChange={(e) => setFormData({...formData, seasons: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                      <input type="number" placeholder="Episodes" value={formData.episodes || ''} onChange={(e) => setFormData({...formData, episodes: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                    </>
-                  ) : (
-                    <input type="number" placeholder="Runtime (minutes)" value={formData.runtime || ''} onChange={(e) => setFormData({...formData, runtime: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  )}
-                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-                    {editingItem ? 'Update' : 'Add'} {formData.type === 'movie' ? 'Movie' : 'Show'}
-                  </button>
-                  {editingItem && (
-                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all duration-300">
-                      Cancel
-                    </button>
-                  )}
-                </form>
+      <main className="pt-24 pb-16 px-8 max-w-7xl mx-auto">
+        {(activeTab === 'tvshows' || activeTab === 'movies') && (
+          <div className="space-y-12">
+            <div>
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-4xl font-bold text-white">{activeTab === 'movies' ? 'Movies' : 'TV Shows'}</h2>
+                <div className="flex-1 h-px bg-slate-700"></div>
+                <span className="text-gray-400 text-lg">{filteredShows.length} titles</span>
               </div>
-
-              <div className="bg-slate-800/50 rounded-2xl p-6 max-h-[600px] overflow-y-auto">
-                <h3 className="text-2xl font-bold text-white mb-6">Manage Shows & Movies</h3>
-                <div className="space-y-3">
-                  {shows.map(show => (
-                    <div key={show.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 hover:bg-slate-800/70 transition-all duration-300">
-                      <img src={show.image} alt={show.title} className="w-16 h-12 object-cover rounded-lg" />
-                      <div className="flex-1">
-                        <h4 className="text-white font-semibold">{show.title}</h4>
-                        <p className="text-gray-400 text-sm">{show.category} • {show.year}</p>
-                      </div>
-                      <button onClick={() => handleEdit('shows', show)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete('shows', show.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {filteredShows.map(show => (
+                  <ShowCard key={show.id} show={show} />
+                ))}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {adminMode === 'news' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-slate-800/50 rounded-2xl p-6">
-                <h3 className="text-2xl font-bold text-white mb-6">{editingItem ? 'Edit' : 'Add'} News</h3>
-                <form onSubmit={handleAddNews} className="space-y-4">
-                  <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="text" placeholder="Date" value={formData.date || ''} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  <textarea placeholder="Excerpt" value={formData.excerpt || ''} onChange={(e) => setFormData({...formData, excerpt: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24" required />
-                  <input type="text" placeholder="Category" value={formData.category || ''} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  <input type="text" placeholder="Author" value={formData.author || ''} onChange={(e) => setFormData({...formData, author: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-300">Image</label>
-                    <input type="text" placeholder="Image URL" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                    {formData.image && <img src={formData.image} alt="Preview" className="w-full h-32 object-cover rounded-xl" />}
+        {activeTab === 'news' && (
+          <>
+            <div className="mb-12">
+              <h2 className="text-4xl font-bold text-white mb-3">Latest News</h2>
+              <p className="text-gray-400 text-lg">Stay updated with your favorite shows</p>
+            </div>
+            
+            <div className="grid gap-6">
+              {news.map(item => (
+                <div key={item.id} className="bg-slate-800/50 rounded-2xl overflow-hidden hover:scale-[1.02] transition-all cursor-pointer">
+                  <div className="flex gap-6">
+                    <img src={item.image} alt={item.title} className="w-64 h-48 object-cover" />
+                    <div className="flex-1 p-6 flex flex-col justify-center">
+                      <div className="text-purple-400 text-sm font-semibold mb-2">{item.date}</div>
+                      <h3 className="text-2xl font-bold text-white mb-3">{item.title}</h3>
+                      <p className="text-gray-400 text-lg">{item.excerpt}</p>
+                    </div>
                   </div>
-                  
-                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-                    {editingItem ? 'Update' : 'Add'} News
-                  </button>
-                  {editingItem && (
-                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'chart' && (
+          <>
+            <div className="mb-12">
+              <h2 className="text-4xl font-bold text-white mb-3">Trending Actors</h2>
+              <p className="text-gray-400 text-lg">Most popular stars</p>
+            </div>
+            
+            <div className="bg-slate-800/50 rounded-3xl p-8">
+              <div className="space-y-4">
+                {actors.sort((a, b) => b.trending - a.trending).map((actor, index) => (
+                  <div key={actor.name} className="flex items-center gap-6 p-4 rounded-2xl hover:bg-slate-700/30 transition-all">
+                    <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text w-12 text-center">
+                      {index + 1}
+                    </div>
+                    <img src={actor.image} alt={actor.name} className="w-20 h-20 rounded-full object-cover ring-4 ring-purple-600/50" />
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-white mb-1">{actor.name}</h3>
+                      <p className="text-gray-400">Featured in: {actor.shows.join(', ')}</p>
+                      {actor.bio && <p className="text-gray-500 text-sm mt-1">{actor.bio}</p>}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-6 h-6 text-green-400" />
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-white">{actor.trending}</div>
+                        <div className="text-sm text-gray-400">Score</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </main>
+
+      <footer className="mt-16 border-t border-slate-800 pt-8 pb-6">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex justify-between items-center">
+            <div className="text-gray-400 text-sm">© 2025 ATV / Blackwell Studios</div>
+            <div className="flex items-center gap-6">
+              <span className="text-gray-500 text-sm">Version {APP_VERSION}</span>
+              <div className="flex gap-4">
+                <button className="text-gray-400 hover:text-white text-sm">Privacy</button>
+                <button className="text-gray-400 hover:text-white text-sm">Terms</button>
+                <button className="text-gray-400 hover:text-white text-sm">Help</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {selectedShow && <Modal show={selectedShow} onClose={() => setSelectedShow(null)} />}
+      {showAdminPanel && <AdminPanel />}
+      {editingEpisode && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-3xl max-w-2xl w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white">Edit Episode</h3>
+              <button onClick={() => setEditingEpisode(null)} className="text-gray-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveEpisode} className="space-y-4">
+              <input 
+                type="text" 
+                placeholder="Episode Title" 
+                value={episodeFormData.title || ''}
+                onChange={(e) => setEpisodeFormData({...episodeFormData, title: e.target.value})}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+                required
+              />
+              
+              <textarea 
+                placeholder="Description" 
+                value={episodeFormData.description || ''}
+                onChange={(e) => setEpisodeFormData({...episodeFormData, description: e.target.value})}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white h-24"
+                required
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <input 
+                  type="number" 
+                  placeholder="Duration (min)" 
+                  value={episodeFormData.duration || ''}
+                  onChange={(e) => setEpisodeFormData({...episodeFormData, duration: e.target.value})}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+                  required
+                />
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  placeholder="Rating" 
+                  value={episodeFormData.rating || ''}
+                  onChange={(e) => setEpisodeFormData({...episodeFormData, rating: e.target.value})}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <input 
+                  type="text" 
+                  placeholder="Director" 
+                  value={episodeFormData.director || ''}
+                  onChange={(e) => setEpisodeFormData({...episodeFormData, director: e.target.value})}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+                />
+                <input 
+                  type="text" 
+                  placeholder="Writer" 
+                  value={episodeFormData.writer || ''}
+                  onChange={(e) => setEpisodeFormData({...episodeFormData, writer: e.target.value})}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+                />
+              </div>
+
+              <input 
+                type="date" 
+                value={episodeFormData.releaseDate || ''}
+                onChange={(e) => setEpisodeFormData({...episodeFormData, releaseDate: e.target.value})}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+              />
+              
+              <input 
+                type="text" 
+                placeholder="Image URL" 
+                value={episodeFormData.image || ''}
+                onChange={(e) => setEpisodeFormData({...episodeFormData, image: e.target.value})}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white"
+              />
+              
+              <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700">
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default App;
