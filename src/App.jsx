@@ -105,41 +105,47 @@ const App = () => {
   const categories = ["Action", "Romance", "Comedy", "Drama", "Sci-Fi", "Fantasy", "Horror", "Thriller", "Crime", "Documentary"];
 
   useEffect(() => {
-    const initializeAdmin = async () => {
+    const loadData = () => {
       try {
-        const adminEmail = 'ginchevalex@gmail.com';
-        const result = await window.storage.get(`user:${adminEmail}`, true);
+        const savedShows = localStorage.getItem('appletv_shows');
+        const savedNews = localStorage.getItem('appletv_news');
+        const savedActors = localStorage.getItem('appletv_actors');
         
-        if (!result) {
-          const adminData = {
-            email: adminEmail,
-            password: '1404april',
-            isAdmin: true,
-            createdAt: new Date().toISOString()
-          };
-          await window.storage.set(`user:${adminEmail}`, JSON.stringify(adminData), true);
-        }
+        if (savedShows) setShows(JSON.parse(savedShows));
+        if (savedNews) setNews(JSON.parse(savedNews));
+        if (savedActors) setChartData(JSON.parse(savedActors));
       } catch (error) {
-        console.error('Admin initialization error:', error);
+        console.error('Error loading data:', error);
       }
     };
     
-    initializeAdmin();
+    loadData();
   }, []);
 
-  const handleLogin = async (e) => {
+  useEffect(() => {
+    localStorage.setItem('appletv_shows', JSON.stringify(shows));
+  }, [shows]);
+
+  useEffect(() => {
+    localStorage.setItem('appletv_news', JSON.stringify(news));
+  }, [news]);
+
+  useEffect(() => {
+    localStorage.setItem('appletv_actors', JSON.stringify(chartData));
+  }, [chartData]);
+
+  const handleLogin = (e) => {
     e.preventDefault();
     setLoginError('');
     
     try {
-      const result = await window.storage.get(`user:${loginEmail}`, true);
+      const users = JSON.parse(localStorage.getItem('appletv_users') || '{}');
+      const userData = users[loginEmail];
       
-      if (!result) {
+      if (!userData) {
         setLoginError('Account not found. Please sign up first.');
         return;
       }
-      
-      const userData = JSON.parse(result.value);
       
       if (userData.password !== loginPassword) {
         setLoginError('Incorrect password. Please try again.');
@@ -150,11 +156,12 @@ const App = () => {
       setIsLoggedIn(true);
       setIsAdmin(userData.isAdmin || false);
     } catch (error) {
-      setLoginError('Account not found. Please sign up first.');
+      setLoginError('Error logging in. Please try again.');
+      console.error('Login error:', error);
     }
   };
 
-  const handleSignup = async (e) => {
+  const handleSignup = (e) => {
     e.preventDefault();
     setLoginError('');
     
@@ -169,21 +176,24 @@ const App = () => {
     }
     
     try {
-      const existingUser = await window.storage.get(`user:${signupEmail}`, true);
+      const users = JSON.parse(localStorage.getItem('appletv_users') || '{}');
       
-      if (existingUser) {
+      if (users[signupEmail]) {
         setLoginError('An account with this email already exists.');
         return;
       }
       
+      const isAdminEmail = signupEmail === 'ginchevalex@gmail.com';
+      
       const userData = {
         email: signupEmail,
         password: signupPassword,
-        isAdmin: false,
+        isAdmin: isAdminEmail,
         createdAt: new Date().toISOString()
       };
       
-      await window.storage.set(`user:${signupEmail}`, JSON.stringify(userData), true);
+      users[signupEmail] = userData;
+      localStorage.setItem('appletv_users', JSON.stringify(users));
       
       setCurrentUser(userData);
       setIsLoggedIn(true);
@@ -336,12 +346,12 @@ const App = () => {
         </div>
 
         <div className="relative z-10 w-full max-w-md">
-          <div className="text-center mb-12 animate-fade-in">
+          <div className="text-center mb-12">
             <h1 className="text-6xl font-semibold text-white mb-4">Apple TV</h1>
             <p className="text-gray-400 text-lg">The home of Apple Originals</p>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 animate-slide-up">
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10">
             <h2 className="text-3xl font-bold text-white mb-2 text-center">
               {showSignup ? 'Create Account' : 'Sign In'}
             </h2>
@@ -350,7 +360,7 @@ const App = () => {
             </p>
 
             {loginError && (
-              <div className="mb-6 bg-red-500/10 border border-red-500/50 rounded-xl p-4 animate-fade-in">
+              <div className="mb-6 bg-red-500/10 border border-red-500/50 rounded-xl p-4">
                 <p className="text-red-400 text-sm text-center">{loginError}</p>
               </div>
             )}
@@ -505,8 +515,8 @@ const App = () => {
   );
 
   const Modal = ({ show, onClose }) => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8 animate-fade-in" onClick={onClose}>
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto animate-slide-up" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8" onClick={onClose}>
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
         <div className="relative h-96">
           <img src={show.image} alt={show.title} className="w-full h-full object-cover rounded-t-3xl" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
@@ -571,7 +581,7 @@ const App = () => {
   );
 
   const AdminPanel = () => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-6xl w-full my-8">
         <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 p-6 border-b border-slate-700 flex items-center justify-between z-10 rounded-t-3xl">
           <h2 className="text-3xl font-bold text-white">Admin Panel</h2>
@@ -793,12 +803,6 @@ const App = () => {
         @keyframes slide-up {
           from { transform: translateY(20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-        .animate-slide-up {
-          animation: slide-up 0.6s ease-out;
         }
       `}</style>
 
