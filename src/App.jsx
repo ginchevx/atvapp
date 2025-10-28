@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Plus, Info, Star, TrendingUp, Film, Tv, Newspaper, Settings, Edit, Trash2, X } from 'lucide-react';
+import { Play, Plus, Info, Star, TrendingUp, Film, Tv, Newspaper, Settings, Edit, Trash2, X, Upload } from 'lucide-react';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -64,18 +64,29 @@ const App = () => {
     { name: "Ryan Gosling", trending: 87, shows: ["Quantum Leap"], image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" }
   ]);
 
-  // Admin form states
   const [adminMode, setAdminMode] = useState('shows');
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (loginEmail && loginPassword) {
+    if (loginEmail === 'ginchevalex@gmail.com' && loginPassword === '1404April') {
       setIsLoggedIn(true);
-      if (loginEmail === 'admin@appletv.com') {
-        setIsAdmin(true);
-      }
+      setIsAdmin(true);
+    } else if (loginEmail && loginPassword) {
+      setIsLoggedIn(true);
+      setIsAdmin(false);
+    }
+  };
+
+  const handleImageUpload = (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({...formData, [field]: reader.result});
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -189,73 +200,66 @@ const App = () => {
     true
   );
 
-  // Login Page
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-8">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '4s'}}></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse" style={{animationDuration: '6s', animationDelay: '1s'}}></div>
         </div>
 
         <div className="relative z-10 w-full max-w-md">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <svg className="w-14 h-14" viewBox="0 0 24 24" fill="white">
-                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-              </svg>
-              <span className="text-6xl font-semibold text-white">Apple TV</span>
-            </div>
+          <div className="text-center mb-12 animate-fade-in">
+            <h1 className="text-6xl font-semibold text-white mb-4">Apple TV</h1>
             <p className="text-gray-400 text-lg">The home of Apple Originals</p>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10">
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 animate-slide-up">
             <h2 className="text-3xl font-bold text-white mb-2 text-center">Sign In</h2>
             <p className="text-gray-400 text-center mb-8">Continue to Apple TV</p>
 
             <form onSubmit={handleLogin} className="space-y-6">
-              <div>
+              <div className="transform transition-all duration-300 hover:scale-[1.01]">
                 <label className="block text-sm font-semibold text-gray-300 mb-2">Apple ID</label>
                 <input
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-2">Hint: Use admin@appletv.com for admin access</p>
               </div>
 
-              <div>
+              <div className="transform transition-all duration-300 hover:scale-[1.01]">
                 <label className="block text-sm font-semibold text-gray-300 mb-2">Password</label>
                 <input
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-600/30"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl shadow-lg shadow-blue-600/30"
               >
                 Sign In
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <a href="#" className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors">
+              <a href="#" className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors duration-300">
                 Forgot Apple ID or password?
               </a>
             </div>
 
             <div className="mt-8 pt-6 border-t border-slate-700 text-center">
               <p className="text-gray-400 text-sm mb-4">Don't have an Apple ID?</p>
-              <a href="#" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+              <a href="#" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300">
                 Create yours now
               </a>
             </div>
@@ -271,26 +275,25 @@ const App = () => {
     );
   }
 
-  // Admin Panel
   const AdminPanel = () => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8 overflow-y-auto">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-auto">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8 overflow-y-auto animate-fade-in">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-auto animate-slide-up">
         <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 p-6 border-b border-slate-700 flex items-center justify-between">
           <h2 className="text-3xl font-bold text-white">Admin Panel</h2>
-          <button onClick={() => { setShowAdminPanel(false); setFormData({}); setEditingItem(null); }} className="text-gray-400 hover:text-white">
+          <button onClick={() => { setShowAdminPanel(false); setFormData({}); setEditingItem(null); }} className="text-gray-400 hover:text-white transition-all duration-300 hover:rotate-90 transform">
             <X className="w-8 h-8" />
           </button>
         </div>
 
         <div className="p-6">
           <div className="flex gap-4 mb-6">
-            <button onClick={() => { setAdminMode('shows'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all ${adminMode === 'shows' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-slate-700 text-gray-300'}`}>
+            <button onClick={() => { setAdminMode('shows'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${adminMode === 'shows' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
               Shows & Movies
             </button>
-            <button onClick={() => { setAdminMode('news'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all ${adminMode === 'news' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-slate-700 text-gray-300'}`}>
+            <button onClick={() => { setAdminMode('news'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${adminMode === 'news' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
               News
             </button>
-            <button onClick={() => { setAdminMode('actors'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all ${adminMode === 'actors' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-slate-700 text-gray-300'}`}>
+            <button onClick={() => { setAdminMode('actors'); setFormData({}); setEditingItem(null); }} className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${adminMode === 'actors' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'}`}>
               Chart (Actors)
             </button>
           </div>
@@ -300,29 +303,43 @@ const App = () => {
               <div className="bg-slate-800/50 rounded-2xl p-6">
                 <h3 className="text-2xl font-bold text-white mb-6">{editingItem ? 'Edit' : 'Add'} Show/Movie</h3>
                 <form onSubmit={handleAddShow} className="space-y-4">
-                  <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <select value={formData.type || 'tvshow'} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500">
+                  <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  
+                  <select value={formData.type || 'tvshow'} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all duration-300">
                     <option value="tvshow">TV Show</option>
                     <option value="movie">Movie</option>
                   </select>
-                  <input type="text" placeholder="Image URL" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24" required />
-                  <input type="number" step="0.1" placeholder="Rating (e.g., 8.5)" value={formData.rating || ''} onChange={(e) => setFormData({...formData, rating: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="number" placeholder="Year" value={formData.year || ''} onChange={(e) => setFormData({...formData, year: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="text" placeholder="Cast (comma separated)" value={formData.cast || ''} onChange={(e) => setFormData({...formData, cast: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-300">Image</label>
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="Image URL or upload below" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="flex-1 bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
+                      <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105">
+                        <Upload className="w-5 h-5" />
+                        Upload
+                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'image')} className="hidden" />
+                      </label>
+                    </div>
+                    {formData.image && <img src={formData.image} alt="Preview" className="w-full h-32 object-cover rounded-xl" />}
+                  </div>
+                  
+                  <textarea placeholder="Description" value={formData.description || ''} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24 transition-all duration-300" required />
+                  <input type="number" step="0.1" placeholder="Rating (e.g., 8.5)" value={formData.rating || ''} onChange={(e) => setFormData({...formData, rating: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  <input type="number" placeholder="Year" value={formData.year || ''} onChange={(e) => setFormData({...formData, year: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  <input type="text" placeholder="Cast (comma separated)" value={formData.cast || ''} onChange={(e) => setFormData({...formData, cast: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
                   {formData.type === 'tvshow' ? (
                     <>
-                      <input type="number" placeholder="Seasons" value={formData.seasons || ''} onChange={(e) => setFormData({...formData, seasons: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                      <input type="number" placeholder="Episodes" value={formData.episodes || ''} onChange={(e) => setFormData({...formData, episodes: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
+                      <input type="number" placeholder="Seasons" value={formData.seasons || ''} onChange={(e) => setFormData({...formData, seasons: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
+                      <input type="number" placeholder="Episodes" value={formData.episodes || ''} onChange={(e) => setFormData({...formData, episodes: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
                     </>
                   ) : (
-                    <input type="number" placeholder="Runtime (minutes)" value={formData.runtime || ''} onChange={(e) => setFormData({...formData, runtime: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
+                    <input type="number" placeholder="Runtime (minutes)" value={formData.runtime || ''} onChange={(e) => setFormData({...formData, runtime: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
                   )}
-                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all">
+                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02]">
                     {editingItem ? 'Update' : 'Add'} {formData.type === 'movie' ? 'Movie' : 'Show'}
                   </button>
                   {editingItem && (
-                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all">
+                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all duration-300">
                       Cancel
                     </button>
                   )}
@@ -333,16 +350,16 @@ const App = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Manage Shows & Movies</h3>
                 <div className="space-y-3">
                   {shows.map(show => (
-                    <div key={show.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4">
+                    <div key={show.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 transition-all duration-300 hover:bg-slate-800/70 transform hover:scale-[1.02]">
                       <img src={show.image} alt={show.title} className="w-16 h-24 object-cover rounded-lg" />
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">{show.title}</h4>
                         <p className="text-gray-400 text-sm">{show.type === 'movie' ? 'Movie' : 'TV Show'} • {show.year}</p>
                       </div>
-                      <button onClick={() => handleEdit('shows', show)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      <button onClick={() => handleEdit('shows', show)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete('shows', show.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <button onClick={() => handleDelete('shows', show.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-110">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -357,15 +374,28 @@ const App = () => {
               <div className="bg-slate-800/50 rounded-2xl p-6">
                 <h3 className="text-2xl font-bold text-white mb-6">{editingItem ? 'Edit' : 'Add'} News</h3>
                 <form onSubmit={handleAddNews} className="space-y-4">
-                  <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="text" placeholder="Date (e.g., 2 days ago)" value={formData.date || ''} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
-                  <textarea placeholder="Excerpt" value={formData.excerpt || ''} onChange={(e) => setFormData({...formData, excerpt: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24" required />
-                  <input type="text" placeholder="Image URL" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all">
+                  <input type="text" placeholder="Title" value={formData.title || ''} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  <input type="text" placeholder="Date (e.g., 2 days ago)" value={formData.date || ''} onChange={(e) => setFormData({...formData, date: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
+                  <textarea placeholder="Excerpt" value={formData.excerpt || ''} onChange={(e) => setFormData({...formData, excerpt: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 h-24 transition-all duration-300" required />
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-300">Image</label>
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="Image URL or upload below" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="flex-1 bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
+                      <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105">
+                        <Upload className="w-5 h-5" />
+                        Upload
+                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'image')} className="hidden" />
+                      </label>
+                    </div>
+                    {formData.image && <img src={formData.image} alt="Preview" className="w-full h-32 object-cover rounded-xl" />}
+                  </div>
+                  
+                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02]">
                     {editingItem ? 'Update' : 'Add'} News
                   </button>
                   {editingItem && (
-                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all">
+                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all duration-300">
                       Cancel
                     </button>
                   )}
@@ -376,16 +406,16 @@ const App = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Manage News</h3>
                 <div className="space-y-3">
                   {news.map(item => (
-                    <div key={item.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4">
+                    <div key={item.id} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 transition-all duration-300 hover:bg-slate-800/70 transform hover:scale-[1.02]">
                       <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">{item.title}</h4>
                         <p className="text-gray-400 text-sm">{item.date}</p>
                       </div>
-                      <button onClick={() => handleEdit('news', item)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      <button onClick={() => handleEdit('news', item)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete('news', item.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <button onClick={() => handleDelete('news', item.id)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-110">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -400,15 +430,28 @@ const App = () => {
               <div className="bg-slate-800/50 rounded-2xl p-6">
                 <h3 className="text-2xl font-bold text-white mb-6">{editingItem ? 'Edit' : 'Add'} Actor</h3>
                 <form onSubmit={handleAddActor} className="space-y-4">
-                  <input type="text" placeholder="Actor Name" value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="number" placeholder="Trending Score (0-100)" value={formData.trending || ''} onChange={(e) => setFormData({...formData, trending: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="text" placeholder="Shows (comma separated)" value={formData.shows || ''} onChange={(e) => setFormData({...formData, shows: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <input type="text" placeholder="Image URL" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" required />
-                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all">
+                  <input type="text" placeholder="Actor Name" value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  <input type="number" placeholder="Trending Score (0-100)" value={formData.trending || ''} onChange={(e) => setFormData({...formData, trending: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  <input type="text" placeholder="Shows (comma separated)" value={formData.shows || ''} onChange={(e) => setFormData({...formData, shows: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" required />
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-300">Image</label>
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="Image URL or upload below" value={formData.image || ''} onChange={(e) => setFormData({...formData, image: e.target.value})} className="flex-1 bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all duration-300" />
+                      <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-105">
+                        <Upload className="w-5 h-5" />
+                        Upload
+                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'image')} className="hidden" />
+                      </label>
+                    </div>
+                    {formData.image && <img src={formData.image} alt="Preview" className="w-20 h-20 object-cover rounded-full" />}
+                  </div>
+                  
+                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02]">
                     {editingItem ? 'Update' : 'Add'} Actor
                   </button>
                   {editingItem && (
-                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all">
+                    <button type="button" onClick={() => { setEditingItem(null); setFormData({}); }} className="w-full bg-slate-700 text-white font-bold py-3 rounded-xl hover:bg-slate-600 transition-all duration-300">
                       Cancel
                     </button>
                   )}
@@ -419,16 +462,16 @@ const App = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Manage Actors</h3>
                 <div className="space-y-3">
                   {chartData.map(actor => (
-                    <div key={actor.name} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4">
+                    <div key={actor.name} className="bg-slate-900/50 rounded-xl p-4 flex items-center gap-4 transition-all duration-300 hover:bg-slate-800/70 transform hover:scale-[1.02]">
                       <img src={actor.image} alt={actor.name} className="w-16 h-16 object-cover rounded-full" />
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">{actor.name}</h4>
                         <p className="text-gray-400 text-sm">Score: {actor.trending}</p>
                       </div>
-                      <button onClick={() => handleEdit('actors', actor)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      <button onClick={() => handleEdit('actors', actor)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete('actors', actor.name)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <button onClick={() => handleDelete('actors', actor.name)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-110">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -442,21 +485,20 @@ const App = () => {
     </div>
   );
 
-  // Main App (after login)
   const ShowCard = ({ show }) => (
     <div 
-      className="group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 hover:scale-105 hover:z-10"
+      className="group relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-700 hover:scale-105 hover:z-10"
       onClick={() => setSelectedShow(show)}
     >
       <div className="aspect-[2/3] relative">
         <img 
           src={show.image} 
           alt={show.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
         
-        <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+        <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
           <div className="flex items-center gap-2 mb-2">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
             <span className="text-white font-semibold">{show.rating}</span>
@@ -464,11 +506,11 @@ const App = () => {
           <h3 className="text-white font-bold text-xl mb-2">{show.title}</h3>
           <p className="text-gray-300 text-sm line-clamp-2 mb-4">{show.description}</p>
           <div className="flex gap-2">
-            <button className="flex-1 bg-white text-black rounded-lg py-2 px-4 font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
+            <button className="flex-1 bg-white text-black rounded-lg py-2 px-4 font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
               <Play className="w-4 h-4 fill-current" />
               Play
             </button>
-            <button className="bg-white/20 backdrop-blur-sm text-white rounded-lg p-2 hover:bg-white/30 transition-colors">
+            <button className="bg-white/20 backdrop-blur-sm text-white rounded-lg p-2 hover:bg-white/30 transition-all duration-300 transform hover:scale-110">
               <Plus className="w-5 h-5" />
             </button>
           </div>
@@ -482,14 +524,14 @@ const App = () => {
   );
 
   const Modal = ({ show, onClose }) => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8" onClick={onClose}>
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8 animate-fade-in" onClick={onClose}>
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-auto animate-slide-up" onClick={e => e.stopPropagation()}>
         <div className="relative h-96">
           <img src={show.image} alt={show.title} className="w-full h-full object-cover rounded-t-3xl" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+            className="absolute top-6 right-6 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all duration-300 hover:rotate-90 transform"
           >
             ✕
           </button>
@@ -505,11 +547,11 @@ const App = () => {
               {show.runtime && <span className="text-gray-300">{show.runtime} min</span>}
             </div>
             <div className="flex gap-3">
-              <button className="bg-white text-black rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-gray-200 transition-colors">
+              <button className="bg-white text-black rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
                 <Play className="w-6 h-6 fill-current" />
                 Play Now
               </button>
-              <button className="bg-white/20 backdrop-blur-sm text-white rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-white/30 transition-colors">
+              <button className="bg-white/20 backdrop-blur-sm text-white rounded-xl py-4 px-8 font-bold flex items-center gap-3 hover:bg-white/30 transition-all duration-300 transform hover:scale-105">
                 <Plus className="w-6 h-6" />
                 My List
               </button>
@@ -525,7 +567,7 @@ const App = () => {
               <h3 className="text-white font-bold text-xl mb-4">Cast</h3>
               <div className="flex flex-wrap gap-2">
                 {show.cast.map((actor, i) => (
-                  <span key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  <span key={i} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 transform">
                     {actor}
                   </span>
                 ))}
@@ -549,8 +591,24 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md">
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slide-up {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.6s ease-out;
+        }
+      `}</style>
+
+      <header className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md transition-all duration-300">
         <div className="max-w-[1600px] mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-12">
@@ -559,7 +617,7 @@ const App = () => {
               <nav className="flex gap-8">
                 <button 
                   onClick={() => setActiveTab('tvshows')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-colors ${
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'tvshows' ? 'text-white' : 'text-gray-400 hover:text-white'
                   }`}
                 >
@@ -568,7 +626,7 @@ const App = () => {
                 </button>
                 <button 
                   onClick={() => setActiveTab('movies')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-colors ${
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'movies' ? 'text-white' : 'text-gray-400 hover:text-white'
                   }`}
                 >
@@ -577,7 +635,7 @@ const App = () => {
                 </button>
                 <button 
                   onClick={() => setActiveTab('news')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-colors ${
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'news' ? 'text-white' : 'text-gray-400 hover:text-white'
                   }`}
                 >
@@ -586,7 +644,7 @@ const App = () => {
                 </button>
                 <button 
                   onClick={() => setActiveTab('chart')}
-                  className={`flex items-center gap-2 text-lg font-semibold transition-colors ${
+                  className={`flex items-center gap-2 text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'chart' ? 'text-white' : 'text-gray-400 hover:text-white'
                   }`}
                 >
@@ -600,7 +658,7 @@ const App = () => {
               {isAdmin && (
                 <button 
                   onClick={() => setShowAdminPanel(true)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   <Settings className="w-4 h-4" />
                   Admin
@@ -608,7 +666,7 @@ const App = () => {
               )}
               <button 
                 onClick={() => setIsLoggedIn(false)}
-                className="text-gray-400 hover:text-white text-sm font-semibold transition-colors"
+                className="text-gray-400 hover:text-white text-sm font-semibold transition-all duration-300"
               >
                 Sign Out
               </button>
@@ -617,7 +675,6 @@ const App = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="pt-32 pb-16 px-8 max-w-[1600px] mx-auto">
         {(activeTab === 'tvshows' || activeTab === 'movies') && (
           <>
@@ -647,7 +704,7 @@ const App = () => {
             
             <div className="grid gap-6">
               {news.map(item => (
-                <div key={item.id} className="bg-gradient-to-r from-slate-800/50 to-slate-800/30 backdrop-blur-sm rounded-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
+                <div key={item.id} className="bg-gradient-to-r from-slate-800/50 to-slate-800/30 backdrop-blur-sm rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-500 cursor-pointer transform">
                   <div className="flex gap-6">
                     <img src={item.image} alt={item.title} className="w-64 h-48 object-cover" />
                     <div className="flex-1 p-6 flex flex-col justify-center">
@@ -672,11 +729,11 @@ const App = () => {
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-sm rounded-3xl p-8">
               <div className="space-y-4">
                 {chartData.sort((a, b) => b.trending - a.trending).map((actor, index) => (
-                  <div key={actor.name} className="flex items-center gap-6 p-4 rounded-2xl hover:bg-slate-700/30 transition-colors">
+                  <div key={actor.name} className="flex items-center gap-6 p-4 rounded-2xl hover:bg-slate-700/30 transition-all duration-300 transform hover:scale-[1.01]">
                     <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text w-12 text-center">
                       {index + 1}
                     </div>
-                    <img src={actor.image} alt={actor.name} className="w-20 h-20 rounded-full object-cover ring-4 ring-purple-600/50" />
+                    <img src={actor.image} alt={actor.name} className="w-20 h-20 rounded-full object-cover ring-4 ring-purple-600/50 transition-all duration-300 hover:ring-purple-500" />
                     <div className="flex-1">
                       <h3 className="text-2xl font-bold text-white mb-1">{actor.name}</h3>
                       <p className="text-gray-400">Featured in: {actor.shows.join(', ')}</p>
