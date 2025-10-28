@@ -197,7 +197,7 @@ const App = () => {
   const categories = ["Action", "Romance", "Comedy", "Drama", "Sci-Fi", "Fantasy", "Horror", "Thriller", "Crime", "Documentary", "Animation", "Family"];
 
   // Refs for dropdowns
-  const seasonRefs = useRef({});
+  const contentRefs = useRef({});
 
   // Enhanced gradient animation
   useEffect(() => {
@@ -327,25 +327,16 @@ const App = () => {
     }
   };
 
-  // Enhanced season toggle with animation
+  // Fixed season toggle function
   const toggleSeason = (seasonNumber, showId) => {
     const key = `${showId}-${seasonNumber}`;
+    
     setExpandedSeasons(prev => {
       const newState = { ...prev };
       
+      // If this season is already expanded, collapse it
       if (newState[key]) {
-        // Close with animation
-        const element = seasonRefs.current[key];
-        if (element) {
-          element.style.maxHeight = '0px';
-          element.style.opacity = '0';
-          setTimeout(() => {
-            newState[key] = false;
-            setExpandedSeasons({ ...newState });
-          }, 300);
-        } else {
-          newState[key] = false;
-        }
+        newState[key] = false;
       } else {
         // Close other seasons in the same show
         Object.keys(newState).forEach(k => {
@@ -353,16 +344,8 @@ const App = () => {
             newState[k] = false;
           }
         });
+        // Open the clicked season
         newState[key] = true;
-        
-        // Open with animation
-        setTimeout(() => {
-          const element = seasonRefs.current[key];
-          if (element) {
-            element.style.maxHeight = `${element.scrollHeight}px`;
-            element.style.opacity = '1';
-          }
-        }, 10);
       }
       
       return newState;
@@ -729,7 +712,7 @@ const App = () => {
     </div>
   );
 
-  // Enhanced Season Accordion with smooth animations
+  // Fixed Season Accordion with smooth animations
   const SeasonAccordion = ({ season, showId }) => {
     const key = `${showId}-${season.seasonNumber}`;
     const isExpanded = expandedSeasons[key];
@@ -762,12 +745,9 @@ const App = () => {
         </button>
         
         <div
-          ref={el => seasonRefs.current[key] = el}
-          className="transition-all duration-500 ease-in-out overflow-hidden"
-          style={{
-            maxHeight: isExpanded ? '0px' : '0px',
-            opacity: isExpanded ? 0 : 0
-          }}
+          className={`transition-all duration-500 ease-in-out overflow-hidden ${
+            isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
         >
           <div className="px-6 pb-6 space-y-4">
             {season.episodes.map(episode => (
@@ -1401,23 +1381,6 @@ const App = () => {
             </p>
           </div>
         </div>
-
-        <style>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-          }
-          @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          .animate-float { animation: float 20s ease-in-out infinite; }
-          .animate-gradient { 
-            background-size: 200% 200%;
-            animation: gradient 3s ease infinite;
-          }
-        `}</style>
       </div>
     );
   }
