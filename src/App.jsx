@@ -449,171 +449,172 @@ const App = () => {
     return grouped;
   };
 
-  // Login/Signup Component
-  const LoginSignup = () => (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{
-        background: `
-          radial-gradient(circle at ${gradientPosition.x}% ${gradientPosition.y}%, 
-            rgba(59, 130, 246, 0.25) 0%, 
-            transparent 50%),
-          radial-gradient(circle at ${100 - gradientPosition.x}% ${100 - gradientPosition.y}%, 
-            rgba(139, 92, 246, 0.25) 0%, 
-            transparent 50%),
-          linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)
-        `
-      }}
-    >
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
-          style={{
-            animationDuration: '4s',
-            transform: `translate(${(gradientPosition.x - 50) * 0.1}px, ${(gradientPosition.y - 50) * 0.1}px)`
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
-          style={{
-            animationDuration: '6s',
-            animationDelay: '1s',
-            transform: `translate(${(50 - gradientPosition.x) * 0.1}px, ${(50 - gradientPosition.y) * 0.1}px)`
-          }}
-        ></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            Apple TV
-          </h1>
-          <p className="text-gray-300 text-lg font-light">The home of Apple Originals</p>
+  if (!isLoggedIn) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+        style={{
+          background: `
+            radial-gradient(circle at ${gradientPosition.x}% ${gradientPosition.y}%, 
+              rgba(59, 130, 246, 0.25) 0%, 
+              transparent 50%),
+            radial-gradient(circle at ${100 - gradientPosition.x}% ${100 - gradientPosition.y}%, 
+              rgba(139, 92, 246, 0.25) 0%, 
+              transparent 50%),
+            linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)
+          `
+        }}
+      >
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div 
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
+            style={{
+              animationDuration: '4s',
+              transform: `translate(${(gradientPosition.x - 50) * 0.1}px, ${(gradientPosition.y - 50) * 0.1}px)`
+            }}
+          ></div>
+          <div 
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
+            style={{
+              animationDuration: '6s',
+              animationDelay: '1s',
+              transform: `translate(${(50 - gradientPosition.x) * 0.1}px, ${(50 - gradientPosition.y) * 0.1}px)`
+            }}
+          ></div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
-          <h2 className="text-3xl font-bold text-white mb-2 text-center">
-            {showSignup ? 'Create Account' : 'Sign In'}
-          </h2>
-          <p className="text-gray-300 text-center mb-8">
-            {showSignup ? 'Join Apple TV' : 'Continue to Apple TV'}
-          </p>
+        <div className="relative z-10 w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-6xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              Apple TV
+            </h1>
+            <p className="text-gray-300 text-lg font-light">The home of Apple Originals</p>
+          </div>
 
-          {loginError && (
-            <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-xl p-4">
-              <p className="text-red-300 text-sm text-center">{loginError}</p>
-            </div>
-          )}
-
-          {!showSignup ? (
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Apple ID</label>
-                <input
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Password</label>
-                <input
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-blue-600/30"
-              >
-                Sign In
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleSignup} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Password</label>
-                <input
-                  type="password"
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-2">Confirm Password</label>
-                <input
-                  type="password"
-                  value={signupConfirmPassword}
-                  onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                  placeholder="Re-enter your password"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-blue-600/30"
-              >
-                Create Account
-              </button>
-            </form>
-          )}
-
-          <div className="mt-8 pt-6 border-t border-white/20 text-center">
-            <p className="text-gray-300 text-sm mb-4">
-              {showSignup ? 'Already have an account?' : "Don't have an Apple ID?"}
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-2 text-center">
+              {showSignup ? 'Create Account' : 'Sign In'}
+            </h2>
+            <p className="text-gray-300 text-center mb-8">
+              {showSignup ? 'Join Apple TV' : 'Continue to Apple TV'}
             </p>
-            <button
-              onClick={() => {
-                setShowSignup(!showSignup);
-                setLoginError('');
-                setLoginEmail('');
-                setLoginPassword('');
-                setSignupEmail('');
-                setSignupPassword('');
-                setSignupConfirmPassword('');
-              }}
-              className="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300"
-            >
-              {showSignup ? 'Sign in instead' : 'Create yours now'}
-            </button>
+
+            {loginError && (
+              <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+                <p className="text-red-300 text-sm text-center">{loginError}</p>
+              </div>
+            )}
+
+            {!showSignup ? (
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">Apple ID</label>
+                  <input
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">Password</label>
+                  <input
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-blue-600/30"
+                >
+                  Sign In
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignup} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">Password</label>
+                  <input
+                    type="password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">Confirm Password</label>
+                  <input
+                    type="password"
+                    value={signupConfirmPassword}
+                    onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                    placeholder="Re-enter your password"
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-blue-600/30"
+                >
+                  Create Account
+                </button>
+              </form>
+            )}
+
+            <div className="mt-8 pt-6 border-t border-white/20 text-center">
+              <p className="text-gray-300 text-sm mb-4">
+                {showSignup ? 'Already have an account?' : "Don't have an Apple ID?"}
+              </p>
+              <button
+                onClick={() => {
+                  setShowSignup(!showSignup);
+                  setLoginError('');
+                  setLoginEmail('');
+                  setLoginPassword('');
+                  setSignupEmail('');
+                  setSignupPassword('');
+                  setSignupConfirmPassword('');
+                }}
+                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300"
+              >
+                {showSignup ? 'Sign in instead' : 'Create yours now'}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 text-xs">
+              By signing in, you agree to Apple's Terms and Conditions
+            </p>
           </div>
         </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-gray-400 text-xs">
-            By signing in, you agree to Apple's Terms and Conditions
-          </p>
-        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // Show Card Component
   const ShowCard = ({ show }) => (
@@ -1022,11 +1023,6 @@ const App = () => {
       </div>
     </footer>
   );
-
-  // Main App Render
-  if (!isLoggedIn) {
-    return <LoginSignup />;
-  }
 
   return (
     <div 
